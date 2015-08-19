@@ -78,6 +78,13 @@ module.exports = function(grunt) {
       });
 
       var remote = options.usePromises ? 'promiseChainRemote' : 'remote';
+      if(options.lib){
+        var libs = require('fs').readdirSync(options.lib)
+        for(var i = 0;i<libs.length;i++){
+          require(options.lib + "/" + libs[i])(wd)
+        }
+      }
+
       var browser = wd[remote](appium.host, appium.port);
 
       var opts = _.omit(options, 'usePromises', 'appiumPath');
