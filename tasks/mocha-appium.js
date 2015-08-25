@@ -6,9 +6,12 @@ module.exports = function(grunt) {
   var createDomain = require('domain').create;
   var mocha = require('./lib/mocha-runner');
   var mochaReporterBase = require('mocha/lib/reporters/base');
+  var spawn = require('child_process').spawn;
   var wd = require('wd');
   var appiumLauncher = require('./lib/appium-launcher');
   var _ = grunt.util._;
+  var ios_webkit;
+
 
   grunt.registerMultiTask('mochaAppium', 'Run functional tests with mocha', function() {
     var done = this.async();
@@ -59,13 +62,26 @@ module.exports = function(grunt) {
     };
 
     // launch appium
+    if(options.platformName == 'iOS'){
+      ios_webkit = spawn('ios_webkit_debug_proxy',['-c', options.udid+':27753','-d'])
+      ios_webkit.stdout.on('data', function(data){
+        //grunt.log.debug('ios > '+ data.toString().replace('\n', ''));
+      });
+      ios_webkit.stderr.on('data', function(data){
+        //grunt.log.verbose.error('ios > '+ data);
+      });
+    }
+
     appiumLauncher(_.pick(options, 'appiumPath', 'appiumArgs'), function(err, appium){
       grunt.log.writeln('Appium Running');
       if(err){
         appium.kill();
+        if(ios_webkit)
+          ios_webkit.kill();
         grunt.fail.fatal(err);
         return;
       }
+
 
       appium.stdout.on('data', function(data){
         grunt.log.debug('Appium > '+ data.toString().replace('\n', ''));
@@ -115,6 +131,8 @@ module.exports = function(grunt) {
             runner.run(function(err){
               browser.quit(function(){
                 appium.kill();
+                if(ios_webkit)
+                  ios_webkit.kill();
                 mochaDone(err);
               });
             });
