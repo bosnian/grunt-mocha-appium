@@ -94,10 +94,15 @@ module.exports = function(grunt) {
       });
 
       var remote = options.usePromises ? 'promiseChainRemote' : 'remote';
-      if(options.lib){
-        var libs = require('fs').readdirSync(options.lib)
-        for(var i = 0;i<libs.length;i++){
-          require(options.lib + "/" + libs[i])(wd)
+      if(options.require){
+        try{
+          var libs = require('fs').readdirSync(path.join(process.cwd(),options.require))
+
+          for(var i = 0;i<libs.length;i++){
+            require(path.join(process.cwd(),options.require,libs[i]))(wd)
+          }
+        }catch(e){
+
         }
       }
 
