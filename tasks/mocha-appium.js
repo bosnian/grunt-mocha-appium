@@ -4,6 +4,7 @@
 
 module.exports = function(grunt) {
   var createDomain = require('domain').create;
+  var path = require('path');
   var mocha = require('./lib/mocha-runner');
   var mochaReporterBase = require('mocha/lib/reporters/base');
   var spawn = require('child_process').spawn;
