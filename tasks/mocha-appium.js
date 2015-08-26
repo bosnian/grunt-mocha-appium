@@ -9,6 +9,7 @@ module.exports = function(grunt) {
   var mochaReporterBase = require('mocha/lib/reporters/base');
   var spawn = require('child_process').spawn;
   var wd = require('wd');
+  var fs = require('fs');
   var appiumLauncher = require('./lib/appium-launcher');
   var _ = grunt.util._;
   var ios_webkit;
@@ -95,16 +96,18 @@ module.exports = function(grunt) {
       });
 
       var remote = options.usePromises ? 'promiseChainRemote' : 'remote';
-      if(options.require){
-        try{
-          var libs = require('fs').readdirSync(path.join(process.cwd(),options.require))
-
-          for(var i = 0;i<libs.length;i++){
-            require(path.join(process.cwd(),options.require,libs[i]))(wd)
+      var cwd = process.cwd();
+      module.paths.push(cwd, path.join(cwd, 'node_modules'));
+      if (options && options.require) {
+        var mods = options.require;
+        if (!(mods instanceof Array)) { mods = [mods]; }
+        mods.forEach(function(mod) {
+          var abs = fs.existsSync(mod) || fs.existsSync(mod + '.js');
+          if (abs) {
+            mod = path.resolve(mod);
           }
-        }catch(e){
-
-        }
+          require(mod)(wd);
+        });
       }
 
       var browser = wd[remote](appium.host, appium.port);
