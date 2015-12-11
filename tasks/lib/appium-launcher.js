@@ -20,10 +20,11 @@ function run(options, cb) {
     console.log('Starting Appium with args: ' + appiumArgs.join(" "));
 
     var child;
-    child = spawn(APPIUM_PATH, appiumArgs);
     if (isWin) {
+      child = exec(APPIUM_PATH, appiumArgs);
       child.host = '127.0.0.1';
     } else {
+      child = spawn(APPIUM_PATH, appiumArgs);
       child.host = '0.0.0.0';
     }
     child.port = port;
