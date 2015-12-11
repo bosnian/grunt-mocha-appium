@@ -1,5 +1,8 @@
 var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
+var os = require('os');
 var freeport = require('freeport');
+var isWin = (os.platform() === 'win32'); 
 
 function run(options, cb) {
   options = options || {};
@@ -9,13 +12,20 @@ function run(options, cb) {
     if( err ){
       throw err;
     }
+    if (isWin) {
+      port = 4723;
+    }
     var appiumArgs = options.appiumArgs || [];
     appiumArgs.push('--port', port);
     console.log('Starting Appium with args: ' + appiumArgs.join(" "));
 
     var child;
     child = spawn(APPIUM_PATH, appiumArgs);
-    child.host = '0.0.0.0';
+    if (isWin) {
+      child.host = '127.0.0.1';
+    } else {
+      child.host = '0.0.0.0';
+    }
     child.port = port;
 
     function badExit() {
